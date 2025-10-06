@@ -1,53 +1,140 @@
-1° Passo da aplicação
+# API REST com Spring Boot e Segurança JWT 🚀
 
-1. O Contrato (API REST)
+Este projeto foi desenvolvido como parte de um curso prático de Java e Spring Boot, focando na construção de uma API RESTful completa, desde a persistência de dados até a camada de segurança.
 
-Primeiro, definimos a "linguagem" que o mundo exterior usaria para conversar com nossa aplicação. Usamos os padrões REST:
+![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 
-POST /usuarios: Para CRIAR um novo usuário (enviando os dados em JSON).
+## ✨ Funcionalidades Implementadas
 
-GET /usuarios: Para LER a lista de todos os usuários.
+* **Autenticação via JWT:** Endpoint de login (`/login`) que retorna um JSON Web Token para usuários autenticados.
+* **Autorização:** Endpoints protegidos que só podem ser acessados com um token JWT válido no cabeçalho `Authorization`.
+* **CRUD completo de Usuários:**
+    * `CREATE`: Cadastro de novos usuários.
+    * `READ`: Leitura de todos os usuários e de um usuário específico por ID.
+    * `UPDATE`: Atualização dos dados de um usuário existente.
+    * `DELETE`: Exclusão de um usuário.
 
-GET /usuarios/{id}: Para LER um único usuário específico.
+## 🛠️ Tecnologias Utilizadas
 
-PUT /usuarios/{id}: Para ATUALIZAR um usuário existente (enviando os novos dados em JSON).
+* **Java 17+**
+* **Spring Boot 3.x**
+    * Spring Web
+    * Spring Data JPA
+    * Spring Security
+* **PostgreSQL:** Banco de dados relacional.
+* **Hibernate:** Implementação do JPA para mapeamento objeto-relacional.
+* **Maven:** Gerenciador de dependências e build.
+* **JWT (Java JWT - Auth0):** Para geração e validação de tokens.
+* **Lombok:** Para reduzir código boilerplate (getters, setters, etc.).
 
-DELETE /usuarios/{id}: Para DELETAR um usuário.
+## ⚙️ Pré-requisitos
 
-2. A Camada de Controller (@RestController)
+Antes de começar, você vai precisar ter instalado em sua máquina:
+* [JDK 17 ou superior](https://adoptium.net/)
+* [Maven](https://maven.apache.org/download.cgi)
+* [PostgreSQL](https://www.postgresql.org/download/)
+* Uma IDE de sua preferência (ex: [IntelliJ IDEA](https://www.jetbrains.com/idea/download/))
+* Uma ferramenta para testar APIs, como [Postman](https://www.postman.com/downloads/).
 
-Esta é a porta de entrada da nossa API. A responsabilidade dela é:
+## 🚀 Como Rodar o Projeto
 
-Receber as requisições HTTP.
+1.  **Clone o repositório:**
+    ```bash
+    git clone [https://github.com/CauaBarrosGh/learning-spring-boot]
+    cd learning-spring-boot
+    ```
 
-Usar anotações como @PostMapping, @GetMapping, @PutMapping e @DeleteMapping para mapear uma URL e um método HTTP a uma ação específica.
+2.  **Configure o Banco de Dados:**
+    * Crie um banco de dados no PostgreSQL chamado `banco_estudos`.
+    * Execute o seguinte script SQL para criar a tabela de usuários:
+        ```sql
+        CREATE TABLE usuarios (
+            id SERIAL PRIMARY KEY,
+            nome VARCHAR(100) NOT NULL,
+            email VARCHAR(100) UNIQUE NOT NULL,
+            senha VARCHAR(255) NOT NULL
+        );
+        ```
 
-Extrair informações da requisição usando @PathVariable (para pegar o id da URL) e @RequestBody (para converter o JSON do corpo em um objeto Usuario).
+3.  **Configure o `application.properties`:**
+    * Abra o arquivo `src/main/resources/application.properties`.
+    * Altere as propriedades `spring.datasource.password` e `api.security.token.secret` com seus próprios valores.
+        ```properties
+        spring.datasource.url=jdbc:postgresql://localhost:5432/banco_estudos
+        spring.datasource.username=postgres
+        spring.datasource.password=SUA_SENHA_DO_POSTGRES
+        
+        api.security.token.secret=SUA_CHAVE_SECRETA_PARA_O_JWT
+        ```
 
-Chamar a camada de Serviço para executar a lógica de negócio.
+4.  **Execute a Aplicação:**
+    * Abra o projeto na sua IDE.
+    * Encontre a classe `LearningSpringBootApplication.java` e execute o método `main`.
+    * A aplicação iniciará um usuário `admin@email.com` com senha `123456` por padrão.
 
-Retornar uma resposta HTTP apropriada (como 200 OK, 201 Created, 404 Not Found) usando o ResponseEntity.
+## 🔐 Endpoints da API
 
-3. A Camada de Serviço (@Service)
+A URL base para todos os endpoints é `http://localhost:8080`.
 
-Este é o cérebro da nossa aplicação. A responsabilidade dela é:
+### Autenticação
 
-Conter a lógica de negócio (ex: "para deletar um usuário, primeiro verifique se ele existe").
+#### `POST /login`
+Realiza a autenticação e retorna um token JWT.
 
-Orquestrar as operações, chamando a camada de Repositório para interagir com o banco de dados.
+* **Autenticação:** Nenhuma.
+* **Corpo da Requisição (JSON):**
+    ```json
+    {
+      "email": "admin@email.com",
+      "senha": "123456"
+    }
+    ```
+* **Resposta de Sucesso (200 OK):**
+    ```
+    token de exemplo:
+    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJtaW5oYS1wcmltZWlyYS1hcGkiLCJzdWIiOiJhZG1pbkBlbWFpbC5jb20iLCJleHAiOjE3NjE4MTg0ODR9.abc...
+    ```
 
-Usar Optional<T> para lidar de forma segura com situações onde um dado pode não ser encontrado, evitando os temidos NullPointerException. É ela quem decide se uma operação foi bem-sucedida ou não.
+---
 
-4. A Camada de Repositório (JpaRepository)
+### Usuários (`/usuarios`)
+*Todos os endpoints abaixo exigem um Token JWT no cabeçalho `Authorization: Bearer <token>`.*
 
-Esta é a camada da "mágica" do Spring Data JPA. A responsabilidade dela é:
+#### `GET /usuarios`
+Retorna a lista de todos os usuários.
 
-Comunicar-se com o banco de dados.
+#### `GET /usuarios/{id}`
+Retorna os dados de um usuário específico.
 
-A grande vantagem é que nós não escrevemos a implementação! Apenas definimos uma interface que herda de JpaRepository<Usuario, Long>.
+#### `POST /usuarios`
+Cria um novo usuário.
+* **Corpo da Requisição (JSON):**
+    ```json
+    {
+      "nome": "Novo Usuario",
+      "email": "novo@email.com",
+      "senha": "senhaforte123" 
+    }
+    ```
+* **Resposta de Sucesso (200 OK):** Retorna o objeto do usuário criado, incluindo seu ID gerado.
 
-Ao fazer isso, ganhamos instantaneamente todos os métodos CRUD: save(), findById(), findAll(), deleteById(), existsById(), etc.
+#### `PUT /usuarios/{id}`
+Atualiza os dados de um usuário existente.
+* **Corpo da Requisição (JSON):**
+    ```json
+    {
+      "nome": "Usuario Atualizado",
+      "email": "atualizado@email.com",
+      "senha": "novasenha456"
+    }
+    ```
+* **Resposta de Sucesso (200 OK):** Retorna o objeto do usuário com os dados atualizados.
 
-Vimos também que podemos criar consultas customizadas apenas declarando a assinatura de um método, como findByEmail(String email).
+#### `DELETE /usuarios/{id}`
+Deleta um usuário existente.
+* **Resposta de Sucesso (204 No Content):** Corpo da resposta vazio.
 
-Resumo da Obra: Nós montamos uma aplicação robusta e bem arquitetada, onde cada camada tem sua própria responsabilidade. O Spring Boot cuidou de toda a configuração pesada, e o Spring Data JPA eliminou quase todo o código repetitivo de acesso a dados que tínhamos com o JDBC.
+---
+## Autor
+
+**[Cauã Barros da Costa]**

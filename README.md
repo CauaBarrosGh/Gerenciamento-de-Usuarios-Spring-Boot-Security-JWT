@@ -1,6 +1,6 @@
 # API REST com Spring Boot e Segurança JWT 🚀
 
-Este projeto foi desenvolvido como parte de um curso prático de Java e Spring Boot, focando na construção de uma API RESTful completa, desde a persistência de dados até a camada de segurança.
+Este projeto é uma API RESTful completa, construída com Java e o ecossistema Spring Boot. A aplicação implementa operações de CRUD (Create, Read, Update, Delete) e possui uma camada de segurança robusta utilizando Spring Security com autenticação e autorização baseadas em tokens JWT.
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 

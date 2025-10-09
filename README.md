@@ -2,8 +2,6 @@
 
 Este projeto é uma API RESTful completa, construída com Java e o ecossistema Spring Boot. A aplicação implementa operações de CRUD (Create, Read, Update, Delete) para usuários, possui uma camada de segurança robusta utilizando Spring Security com JWT, e utiliza mensageria assíncrona para processamento em segundo plano.
 
-![Status do Build](https://github.com/CauaBarrosGh/Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT/actions/workflows/ci-pipeline.yml/badge.svg)
-
 ## ✨ Funcionalidades Implementadas
 
 * **Autenticação via JWT:** Endpoint de login (`/login`) que retorna um JSON Web Token para usuários autenticados.
@@ -13,7 +11,7 @@ Este projeto é uma API RESTful completa, construída com Java e o ecossistema S
     * `READ`: Leitura de todos os usuários e de um usuário específico por ID.
     * `UPDATE`: Atualização dos dados de um usuário existente.
     * `DELETE`: Exclusão de um usuário.
-* **CI/CD com github actions: O projeto está configurado com um pipeline de Integração Contínua (CI) utilizando o GitHub Actions, Se qualquer teste falhar, o build falha e o pipeline é interrompido, prevenindo que código com problemas seja integrado à branch principal.
+* **CI/CD** com github actions: O projeto está configurado com um pipeline de Integração Contínua (CI) utilizando o GitHub Actions, Se qualquer teste falhar, o build falha e o pipeline é interrompido, prevenindo que código com problemas seja integrado à branch principal.
 * **Mensageria Assíncrona:** Publicação de um evento em uma fila do RabbitMQ na criação de novos usuários, permitindo que tarefas (como envio de e-mail) sejam processadas em segundo plano.
 
 ## 🛠️ Tecnologias Utilizadas
@@ -23,7 +21,7 @@ Este projeto é uma API RESTful completa, construída com Java e o ecossistema S
     * Spring Web
     * Spring Data JPA
     * Spring Security
-    * **Spring AMQP (para RabbitMQ)**
+    * Spring AMQP (para RabbitMQ)
 * **PostgreSQL:** Banco de dados relacional.
 * **RabbitMQ:** Message Broker para comunicação assíncrona.
 * **Docker:** Para rodar a infraestrutura (PostgreSQL e RabbitMQ) em ambiente de desenvolvimento.

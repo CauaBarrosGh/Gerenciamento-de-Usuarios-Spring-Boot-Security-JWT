@@ -135,6 +135,48 @@ Deleta um usuário existente.
 * **Resposta de Sucesso (204 No Content):** Corpo da resposta vazio.
 
 ---
+
+## 🧪 Testes e Automação (CI/CD)
+
+Para garantir a qualidade, a confiabilidade e a manutenibilidade do código, o projeto adota práticas modernas de testes automatizados e integração contínua.
+
+### Testes Unitários
+
+A camada de serviço (`Service`), que contém as regras de negócio, é coberta por testes unitários.
+
+* **Estratégia:** Os testes são focados em validar a lógica de cada método de forma **isolada**. Para isso, as dependências externas, como a camada de repositório (`Repository`), são simuladas com "mocks".
+* **Ferramentas Utilizadas:**
+    * **JUnit 5:** Framework padrão para a escrita e execução dos testes.
+    * **Mockito:** Utilizado para criar os "mocks" (dublês) das dependências, permitindo testar o serviço sem interagir com o banco de dados.
+    * **AssertJ:** Biblioteca para criar asserções fluentes e legíveis (ex: `assertThat(resultado).isNotNull();`).
+
+#### Como Rodar os Testes Localmente
+
+Você pode executar a suíte de testes completa com o seguinte comando Maven na raiz do projeto:
+
+```bash
+mvn test
+```
+
+### Integração Contínua com GitHub Actions
+
+O projeto está configurado com um pipeline de Integração Contínua (CI) utilizando o GitHub Actions.
+
+* **Gatilho:** O pipeline é acionado automaticamente a cada `push` na branch `master` (ou `main`).
+* **Processo:** O workflow executa as seguintes etapas em um ambiente limpo na nuvem:
+    1.  **Checkout:** Baixa a versão mais recente do código.
+    2.  **Setup JDK:** Configura o ambiente com Java 17.
+    3.  **Build & Test:** Executa o comando `mvn package`. Este comando compila todo o código-fonte e, o mais importante, **roda todos os testes unitários**.
+
+Se um teste falhar, o build falha, e o pipeline é interrompido. Isso garante que código com defeito não seja integrado à branch principal, mantendo a estabilidade do projeto.
+
+### Status do Build
+
+O status da última execução do pipeline na branch principal pode ser visto abaixo:
+
+[![Status do Build](https://github.com/CauaBarrosGh/Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT/actions/workflows/ci-pipeline.yml/badge.svg)](https://github.com/CauaBarrosGh/Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT/actions)
+
+---
 ## Autor
 
 **[Cauã Barros da Costa]**

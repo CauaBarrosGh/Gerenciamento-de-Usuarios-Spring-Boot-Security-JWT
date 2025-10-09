@@ -36,3 +36,5 @@ jobs:
         # 3. Roda os testes
         # 4. Se os testes passarem, empacota a aplicação em um arquivo .jar
         run: mvn -B package --file pom.xml
+
+        #TESTANDO PIPLINE

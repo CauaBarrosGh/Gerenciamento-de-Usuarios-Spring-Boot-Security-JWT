@@ -1,8 +1,8 @@
-# API REST com Spring Boot e Segurança JWT 🚀
+# Gerenciamento de Usuários com Spring Boot/Security JWT e REST API 🚀
 
-Este projeto é uma API RESTful completa, construída com Java e o ecossistema Spring Boot. A aplicação implementa operações de CRUD (Create, Read, Update, Delete) e possui uma camada de segurança robusta utilizando Spring Security com autenticação e autorização baseadas em tokens JWT.
+Este projeto é uma API RESTful completa, construída com Java e o ecossistema Spring Boot. A aplicação implementa operações de CRUD (Create, Read, Update, Delete) para usuários, possui uma camada de segurança robusta utilizando Spring Security com JWT, e utiliza mensageria assíncrona para processamento em segundo plano.
 
-![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
+![Status do Build](https://github.com/CauaBarrosGh/Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT/actions/workflows/ci-pipeline.yml/badge.svg)
 
 ## ✨ Funcionalidades Implementadas
 
@@ -13,15 +13,20 @@ Este projeto é uma API RESTful completa, construída com Java e o ecossistema S
     * `READ`: Leitura de todos os usuários e de um usuário específico por ID.
     * `UPDATE`: Atualização dos dados de um usuário existente.
     * `DELETE`: Exclusão de um usuário.
+* **CI/CD com github actions: O projeto está configurado com um pipeline de Integração Contínua (CI) utilizando o GitHub Actions, Se qualquer teste falhar, o build falha e o pipeline é interrompido, prevenindo que código com problemas seja integrado à branch principal.
+* **Mensageria Assíncrona:** Publicação de um evento em uma fila do RabbitMQ na criação de novos usuários, permitindo que tarefas (como envio de e-mail) sejam processadas em segundo plano.
 
 ## 🛠️ Tecnologias Utilizadas
 
-* **Java 17+**
+* **Java 21**
 * **Spring Boot 3.x**
     * Spring Web
     * Spring Data JPA
     * Spring Security
+    * **Spring AMQP (para RabbitMQ)**
 * **PostgreSQL:** Banco de dados relacional.
+* **RabbitMQ:** Message Broker para comunicação assíncrona.
+* **Docker:** Para rodar a infraestrutura (PostgreSQL e RabbitMQ) em ambiente de desenvolvimento.
 * **Hibernate:** Implementação do JPA para mapeamento objeto-relacional.
 * **Maven:** Gerenciador de dependências e build.
 * **JWT (Java JWT - Auth0):** Para geração e validação de tokens.
@@ -30,9 +35,9 @@ Este projeto é uma API RESTful completa, construída com Java e o ecossistema S
 ## ⚙️ Pré-requisitos
 
 Antes de começar, você vai precisar ter instalado em sua máquina:
-* [JDK 17 ou superior](https://adoptium.net/)
+* [JDK 21 ou superior](https://adoptium.net/)
 * [Maven](https://maven.apache.org/download.cgi)
-* [PostgreSQL](https://www.postgresql.org/download/)
+* [Docker](https://www.docker.com/products/docker-desktop/)
 * Uma IDE de sua preferência (ex: [IntelliJ IDEA](https://www.jetbrains.com/idea/download/))
 * Uma ferramenta para testar APIs, como [Postman](https://www.postman.com/downloads/).
 
@@ -40,30 +45,38 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
 
 1.  **Clone o repositório:**
     ```bash
-    git clone [https://github.com/CauaBarrosGh/learning-spring-boot]
-    cd learning-spring-boot
+    git clone [https://github.com/CauaBarrosGh/Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT.git](https://github.com/CauaBarrosGh/Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT.git)
+    cd Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT
     ```
 
-2.  **Configure o Banco de Dados:**
-    * Crie um banco de dados no PostgreSQL chamado `banco_estudos`.
-    * Execute o seguinte script SQL para criar a tabela de usuários:
-        ```sql
-        CREATE TABLE usuarios (
-            id SERIAL PRIMARY KEY,
-            nome VARCHAR(100) NOT NULL,
-            email VARCHAR(100) UNIQUE NOT NULL,
-            senha VARCHAR(255) NOT NULL
-        );
+2.  **Inicie a Infraestrutura com Docker:**
+    * Abra um terminal na raiz do projeto e execute os comandos abaixo para iniciar os contêineres do PostgreSQL e do RabbitMQ.
+    * **PostgreSQL:**
+        ```bash
+        docker run --name postgres-db -e POSTGRES_PASSWORD=SUA_SENHA_DO_POSTGRES -e POSTGRES_DB=banco_estudos -p 5432:5432 -d postgres
         ```
+    * **RabbitMQ:**
+        ```bash
+        docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+        ```
+    * *Nota: A interface de gerenciamento do RabbitMQ estará disponível em `http://localhost:15672` (login: guest / senha: guest).*
 
 3.  **Configure o `application.properties`:**
     * Abra o arquivo `src/main/resources/application.properties`.
-    * Altere as propriedades `spring.datasource.password` e `api.security.token.secret` com seus próprios valores.
+    * Certifique-se de que a senha em `spring.datasource.password` é a mesma que você definiu no comando do Docker.
         ```properties
+        # Conexão com o PostgreSQL (rodando no Docker)
         spring.datasource.url=jdbc:postgresql://localhost:5432/banco_estudos
         spring.datasource.username=postgres
         spring.datasource.password=SUA_SENHA_DO_POSTGRES
         
+        # Conexão com o RabbitMQ (rodando no Docker)
+        spring.rabbitmq.host=localhost
+        spring.rabbitmq.port=5672
+        spring.rabbitmq.username=guest
+        spring.rabbitmq.password=guest
+        
+        # Chave Secreta para o JWT
         api.security.token.secret=SUA_CHAVE_SECRETA_PARA_O_JWT
         ```
 
@@ -71,6 +84,14 @@ Antes de começar, você vai precisar ter instalado em sua máquina:
     * Abra o projeto na sua IDE.
     * Encontre a classe `LearningSpringBootApplication.java` e execute o método `main`.
     * A aplicação iniciará um usuário `admin@email.com` com senha `123456` por padrão.
+
+## 📨 Arquitetura Assíncrona com RabbitMQ
+
+Na criação de um novo usuário (`POST /usuarios`), a API adota um fluxo assíncrono para tarefas secundárias:
+1.  O `UsuarioService` salva o novo usuário no PostgreSQL.
+2.  Imediatamente após salvar, ele publica uma mensagem contendo o e-mail do novo usuário na fila `usuarios.novos` do RabbitMQ.
+3.  A resposta da API é retornada ao cliente **sem esperar** que o processamento da mensagem termine.
+4.  Em segundo plano, a classe `NotificacaoConsumer` (um "ouvinte" da fila) recebe a mensagem e executa a lógica de negócio (neste caso, simula o envio de um e-mail de boas-vindas).
 
 ## 🔐 Endpoints da API
 
@@ -168,7 +189,7 @@ O projeto está configurado com um pipeline de Integração Contínua (CI) utili
     1.  **Checkout:** Baixa o código mais recente do repositório.
     2.  **Setup JDK:** Prepara o ambiente com a versão correta do Java.
     3.  **Build & Test:** Executa o comando `mvn package`, que compila todo o código e, crucialmente, **roda todos os testes** (unitários e de integração).
-
+    
 Se qualquer teste falhar, o build falha e o pipeline é interrompido, prevenindo que código com problemas seja integrado à branch principal.
 
 ### Status do Build
@@ -177,4 +198,4 @@ Se qualquer teste falhar, o build falha e o pipeline é interrompido, prevenindo
 ---
 ## Autor
 
-**[Cauã Barros da Costa]**
+**Cauã Barros da Costa**

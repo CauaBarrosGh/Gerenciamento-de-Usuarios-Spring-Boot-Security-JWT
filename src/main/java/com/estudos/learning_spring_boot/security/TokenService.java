@@ -36,9 +36,9 @@ public class TokenService {
                     .withIssuer("learning-spring-boot")
                     .build()
                     .verify(tokenJWT)
-                    .getSubject(); // Retorna o email (subject) do usuário se o token for válido
+                    .getSubject();
         } catch (JWTVerificationException exception){
-            return ""; // Retorna vazio se o token for inválido ou expirado
+            return "";
         }
     }
 

@@ -31,5 +31,4 @@ public class AuthenticationController {
         return ResponseEntity.ok(tokenJWT);
     }
 }
-// Crie um record 'DadosLogin' para representar o JSON de entrada.
 record DadosLogin(String email, String senha) {}

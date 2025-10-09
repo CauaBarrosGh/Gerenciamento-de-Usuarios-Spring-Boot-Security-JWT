@@ -14,7 +14,6 @@ public class LearningSpringBootApplication {
 		SpringApplication.run(LearningSpringBootApplication.class, args);
 	}
 
-    // Dentro da classe MinhaPrimeiraApiApplication
     @Bean
     public CommandLineRunner initialData(UsuarioRepository repository, PasswordEncoder passwordEncoder) {
         return (args) -> {

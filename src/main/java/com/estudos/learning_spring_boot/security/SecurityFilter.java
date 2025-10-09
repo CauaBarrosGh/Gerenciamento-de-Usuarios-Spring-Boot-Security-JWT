@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
-@Component // Componente genérico do Spring
+@Component
 public class SecurityFilter extends OncePerRequestFilter {
 
     @Autowired
@@ -35,7 +35,7 @@ public class SecurityFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request, response); // Continua o fluxo da requisição
+        filterChain.doFilter(request, response);
     }
 
     private String recuperarToken(HttpServletRequest request) {

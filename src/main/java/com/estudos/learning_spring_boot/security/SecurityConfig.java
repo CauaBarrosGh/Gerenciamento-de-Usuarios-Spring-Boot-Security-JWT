@@ -28,11 +28,8 @@ public class SecurityConfig {
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers(HttpMethod.POST, "/login").permitAll();
-                    // Adicione outras rotas públicas aqui se precisar (ex: /usuarios para cadastro)
-                    // req.requestMatchers(HttpMethod.POST, "/usuarios").permitAll();
                     req.anyRequest().authenticated();
                 })
-                // Adiciona nosso filtro antes do filtro padrão do Spring
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

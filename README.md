@@ -140,20 +140,21 @@ Deleta um usuário existente.
 
 Para garantir a qualidade, a confiabilidade e a manutenibilidade do código, o projeto adota práticas modernas de testes automatizados e integração contínua.
 
-### Testes Unitários
+### Estratégia de Testes
 
-A camada de serviço (`Service`), que contém as regras de negócio, é coberta por testes unitários.
+A aplicação possui duas camadas principais de testes automatizados:
 
-* **Estratégia:** Os testes são focados em validar a lógica de cada método de forma **isolada**. Para isso, as dependências externas, como a camada de repositório (`Repository`), são simuladas com "mocks".
-* **Ferramentas Utilizadas:**
-    * **JUnit 5:** Framework padrão para a escrita e execução dos testes.
-    * **Mockito:** Utilizado para criar os "mocks" (dublês) das dependências, permitindo testar o serviço sem interagir com o banco de dados.
-    * **AssertJ:** Biblioteca para criar asserções fluentes e legíveis (ex: `assertThat(resultado).isNotNull();`).
+#### Testes de Unidade
+* **Foco:** A camada de Serviço (`@Service`), que contém as regras de negócio.
+* **Estratégia:** Os testes validam a lógica de cada método de forma **isolada**. Para isso, as dependências externas, como a camada de repositório (`Repository`), são simuladas com "mocks" utilizando a biblioteca **Mockito**. Isso garante que os testes sejam extremamente rápidos e independentes do banco de dados.
+
+#### Testes de Integração
+* **Foco:** Garantir que a aplicação Spring Boot consegue iniciar corretamente e que as camadas se integram.
+* **Estratégia:** O teste `contextLoads()`, gerado por padrão, tenta carregar todo o contexto da aplicação. Para que isso funcione sem depender de um banco de dados externo (como o PostgreSQL), o ambiente de teste foi configurado para usar um **banco de dados em memória (H2)**.
+* **Configuração:** Essa separação é feita através do arquivo `src/test/resources/application.properties`, que sobrescreve a configuração principal durante a fase de testes, instruindo o Spring a usar o H2.
 
 #### Como Rodar os Testes Localmente
-
-Você pode executar a suíte de testes completa com o seguinte comando Maven na raiz do projeto:
-
+Execute a suíte de testes completa com o seguinte comando Maven na raiz do projeto:
 ```bash
 mvn test
 ```
@@ -162,18 +163,15 @@ mvn test
 
 O projeto está configurado com um pipeline de Integração Contínua (CI) utilizando o GitHub Actions.
 
-* **Gatilho:** O pipeline é acionado automaticamente a cada `push` na branch `master` (ou `main`).
-* **Processo:** O workflow executa as seguintes etapas em um ambiente limpo na nuvem:
-    1.  **Checkout:** Baixa a versão mais recente do código.
-    2.  **Setup JDK:** Configura o ambiente com Java 17.
-    3.  **Build & Test:** Executa o comando `mvn package`. Este comando compila todo o código-fonte e, o mais importante, **roda todos os testes unitários**.
+* **Gatilho:** O pipeline é acionado automaticamente a cada `push` na branch `master`.
+* **Processo:** O workflow (`.github/workflows/ci-pipeline.yml`) executa as seguintes etapas em um ambiente na nuvem:
+    1.  **Checkout:** Baixa o código mais recente do repositório.
+    2.  **Setup JDK:** Prepara o ambiente com a versão correta do Java.
+    3.  **Build & Test:** Executa o comando `mvn package`, que compila todo o código e, crucialmente, **roda todos os testes** (unitários e de integração).
 
-Se um teste falhar, o build falha, e o pipeline é interrompido. Isso garante que código com defeito não seja integrado à branch principal, mantendo a estabilidade do projeto.
+Se qualquer teste falhar, o build falha e o pipeline é interrompido, prevenindo que código com problemas seja integrado à branch principal.
 
 ### Status do Build
-
-O status da última execução do pipeline na branch principal pode ser visto abaixo:
-
 [![Status do Build](https://github.com/CauaBarrosGh/Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT/actions/workflows/ci-pipeline.yml/badge.svg)](https://github.com/CauaBarrosGh/Gerenciamento-de-Usuarios-Spring-Boot-Security-JWT/actions)
 
 ---
